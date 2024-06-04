@@ -19,7 +19,7 @@
 // PUSH                 motor_group   8, 9            
 // PneumaticH           digital_out   A               
 // PneumaticG           digital_out   B               
-// INTERTIAL            inertial      16              
+// INERTIAL            inertial      16              
 // LIFT                 motor         3               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
@@ -34,7 +34,7 @@ competition Competition;
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
-  INTERTIAL.calibrate();
+  INERTIAL.calibrate();
   PneumaticH.set(true);
   PneumaticG.set(true);
 }
@@ -76,19 +76,19 @@ void move_inches_in_seconds(smartdrive smart_drivetrain, double dist, double sec
 }
 
 void autonomous(void) {
-  // get currentRotation from INTERTIAL position
+  // get currentRotation from INERTIAL position
   const double wheelTravel = 12.566370614359172;
   const double trackWidth = 13.0;
   const double wheelBase = 12.0;
 
   motor_group leftDriveGroup = motor_group(LEFTMOTOR, LEFTMOTORF);
   motor_group rightDriveGroup = motor_group(RIGHTMOTOR, RIGHTMOTORF);
-  smartdrive smart_drivetrain = smartdrive(leftDriveGroup, rightDriveGroup, INTERTIAL, wheelTravel, trackWidth, wheelBase, inches);
+  smartdrive smart_drivetrain = smartdrive(leftDriveGroup, rightDriveGroup, INERTIAL, wheelTravel, trackWidth, wheelBase, inches);
 
   PneumaticH.set(true);
   PneumaticG.set(true);
 
-  while (INTERTIAL.isCalibrating()) {
+  while (INERTIAL.isCalibrating()) {
     wait(1, msec);
   }
 

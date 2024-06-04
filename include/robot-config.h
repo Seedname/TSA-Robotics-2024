@@ -12,7 +12,7 @@ extern motor RIGHTMOTORF;
 extern motor_group PUSH;
 extern digital_out PneumaticH;
 extern digital_out PneumaticG;
-extern inertial INTERTIAL;
+extern inertial INERTIAL;
 extern motor LIFT;
 
 /**

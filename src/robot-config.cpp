@@ -19,7 +19,7 @@ motor PUSHMotorB = motor(PORT9, ratio36_1, false);
 motor_group PUSH = motor_group(PUSHMotorA, PUSHMotorB);
 digital_out PneumaticH = digital_out(Brain.ThreeWirePort.A);
 digital_out PneumaticG = digital_out(Brain.ThreeWirePort.B);
-inertial INTERTIAL = inertial(PORT16);
+inertial INERTIAL = inertial(PORT16);
 motor LIFT = motor(PORT3, ratio18_1, false);
 
 // VEXcode generated functions
