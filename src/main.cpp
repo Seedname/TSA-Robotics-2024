@@ -177,7 +177,7 @@ void autonomous(void) {
   PUSH.spin(directionType::fwd, 50, velocityUnits::pct);
   lock_bot();
   PneumaticH.set(false);
-  wait(3, seconds);
+  wait(30, seconds);
   PUSH.spin(directionType::fwd, 0, velocityUnits::pct);
   PneumaticH.set(true);
 
@@ -221,8 +221,26 @@ void autonomous(void) {
   
   move_inches(30, globalSpeed);
   stop_robot();
+
+  move_inches(10, -globalSpeed);
+  stop_robot();
+
+  move_inches(30, globalSpeed);
+  stop_robot();
+
+  move_inches(30, -globalSpeed);
+  stop_robot();
   lock_bot();
 
+  rotate_degrees(30, rotateSpeed);
+  PneumaticH.set(false);
+
+  move_motors_timed(127, 127, 1);
+  move_motors_timed(127, 0, 1);
+
+  move_inches(10, -globalSpeed);
+  stop_robot();
+  lock_bot();
 }
 
 double map(double val, double inputMin, double inputMax, double outputMin, double outputMax) {
