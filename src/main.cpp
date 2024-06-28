@@ -31,6 +31,9 @@ using namespace vex;
 // Initializing Robot Configuration. DO NOT REMOVE!
 competition Competition;
 
+motor_group leftDriveGroup = motor_group(LEFTMOTOR, LEFTMOTORF);
+motor_group rightDriveGroup = motor_group(RIGHTMOTOR, RIGHTMOTORF);
+
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -54,12 +57,50 @@ double controlCurve(double val) {
 }
 
 void move(int left_speed, int right_speed) {
-  // move right side
-  RIGHTMOTOR.spin(directionType::fwd, right_speed, velocityUnits::pct);
-  RIGHTMOTORF.spin(directionType::fwd, right_speed, velocityUnits::pct);
-  // move left side
-  LEFTMOTOR.spin(directionType::fwd, left_speed, velocityUnits::pct);
-  LEFTMOTORF.spin(directionType::fwd, left_speed, velocityUnits::pct); 
+  rightDriveGroup.spin(directionType::fwd, right_speed, velocityUnits::pct);
+  leftDriveGroup.spin(directionType::fwd, left_speed, velocityUnits::pct);
+}
+
+void move_inches(double inches, int speed) {
+  RIGHTMOTOR.resetPosition();
+  move(speed, speed);
+  waitUntil(absdbl(RIGHTMOTOR.position(degrees)) >= 15 * inches);
+  RIGHTMOTOR.resetPosition();
+}
+
+
+double get_rotation() {
+  double currentRotation = INTERTIAL.rotation(degrees);
+  // printf("Rotation %f\n", currentRotation);
+  return currentRotation;
+}
+
+void rotate_degrees(double degree, int speed) {
+  // INTERTIAL.setRotation(0, degrees);
+  double currentRotation = get_rotation();
+
+  if (degree > 0) {
+    move(speed, -speed);
+  } else {
+    move(-speed, speed);
+  }
+
+  waitUntil(absdbl(get_rotation() - currentRotation) >= degree);
+  // INTERTIAL.setRotation(0, degrees);
+}
+
+void orient_bot(double degree, int speed) {
+  double currentRotation = get_rotation();
+  double newDegree = absdbl(currentRotation - degree);
+
+  if ((currentRotation - degree) > 0) {
+    move(speed, -speed);
+  } else {
+    move(-speed, speed);
+  }
+
+  // // printf("Rotation %f\n", newDegree);
+  waitUntil(absdbl(get_rotation() - currentRotation) >= newDegree);
 }
 
 void move_motors_timed(int leftSpeed, int rightSpeed, double sec) {
@@ -94,17 +135,18 @@ void autonomous(void) {
 
   smart_drivetrain.setRotation(0, degrees);
   
-  int rotateSpeed = 99999;
+  INTERTIAL.setRotation(0, degrees);
 
-  double gearRatio = 36.0 / 60.0;
+  int globalSpeed = 100;
+  int rotateSpeed = 30;
 
   // move bot forward
-  move_inches_in_seconds(smart_drivetrain, 7, 1, wheelTravel, gearRatio, directionType::rev);
-  smart_drivetrain.stop(brakeType::hold);
+  move_inches(7, -globalSpeed);
+  stop_robot();
 
   // rotate towards goal
-  smart_drivetrain.turnFor(right, 15, degrees, rotateSpeed);
-  smart_drivetrain.stop(brakeType::hold);
+  rotate_degrees(20, rotateSpeed);
+  stop_robot();
 
   // move bot into goal
   move_inches_in_seconds(smart_drivetrain, 31, 1, wheelTravel, gearRatio, directionType::rev);
@@ -112,67 +154,92 @@ void autonomous(void) {
 
   // rotate bot so it is flat next to goal
   move_motors_timed(-50, 0, 0.7);
-  smart_drivetrain.stop(brakeType::hold);
+  stop_robot();
+  lock_bot();
 
   // make the bot move backwards and hit into the goal
-  move_inches_in_seconds(smart_drivetrain, 2, 1, wheelTravel, gearRatio, fwd);
-  move_inches_in_seconds(smart_drivetrain, 3, 1, wheelTravel, gearRatio, directionType::rev);
-  smart_drivetrain.stop(brakeType::hold);
+  move_inches(4, 127);
+  move_inches(5, -127);
+  stop_robot();
+  lock_bot();
 
   // move towards launching area
-  move_inches_in_seconds(smart_drivetrain, 3, 1, wheelTravel, gearRatio, fwd);
-  smart_drivetrain.stop(brakeType::hold);
+  move_inches(3.6, globalSpeed);
+  stop_robot();
+  lock_bot();
 
   // align the bot against the launching area
-  move_motors_timed(0, 50, 1.3);
-  smart_drivetrain.stop(brakeType::hold);
+  move_motors_timed(0, 50, 1.2);
+  stop_robot();
+  lock_bot();
 
   // launch for 30 seconds
-  PUSH.spin(directionType::fwd, 60, velocityUnits::pct);
-  smart_drivetrain.stop(brakeType::hold);
+  PUSH.spin(directionType::fwd, 50, velocityUnits::pct);
+  lock_bot();
   PneumaticH.set(false);
-  wait(30, seconds);
+  wait(3, seconds);
   PUSH.spin(directionType::fwd, 0, velocityUnits::pct);
   PneumaticH.set(true);
 
   // moving the robot forward 
-  move_inches_in_seconds(smart_drivetrain, 4, 1, wheelTravel, gearRatio, directionType::rev);
-  smart_drivetrain.stop(brakeType::hold);
+  move_inches(4, -globalSpeed);
+  stop_robot();
+  lock_bot();
 
   // spinning bot around so intake faces forward
-  smart_drivetrain.turnToRotation(90, degrees, rotateSpeed);
-  smart_drivetrain.stop(brakeType::hold);
+  orient_bot(30, -rotateSpeed);
+  stop_robot();
+  lock_bot();
 
   // turn on intake
-  INTAKE.spin(directionType::fwd, 127, velocityUnits::pct);
-  move_inches_in_seconds(smart_drivetrain, 7, 1, wheelTravel, gearRatio, directionType::rev);
-  smart_drivetrain.stop(brakeType::hold);
-}
+  INTAKE.spin(directionType::rev, 127, velocityUnits::pct);
+
+  move_inches(27, globalSpeed);
+  stop_robot();
+  lock_bot();
+
+  // PUSH.resetPosition();
+  // PUSH.spin(directionType::fwd, 127, velocityUnits::pct);
+  // waitUntil((absdbl(PUSH.position(degrees)) >= 130));
+  // PUSH.stop(brakeType::hold);
+
+  move_motors_timed(50, 0, 0.2);
+  stop_robot();
+  lock_bot();
+
+  move_inches(75, globalSpeed);
+  stop_robot();
+  lock_bot();
+
+  // move_motors_timed(127, 127, 0.5);
+  // move_motors_timed(-127, -127, 0.5);
+
+  move_motors_timed(50, -50, 0.6);
+  stop_robot();
+
+  PneumaticG.set(false);
   
+  move_inches(30, globalSpeed);
+  stop_robot();
+  lock_bot();
+
+}
+
+double map(double val, double inputMin, double inputMax, double outputMin, double outputMax) {
+  return (val - inputMin) * outputMax / inputMax + outputMin;
+}
+
 
 void usercontrol(void) {
   while (true) {
-    double leftMotorSpin = controlCurve(1.27 * Controller1.Axis3.value());
-    double rightMotorSpin = controlCurve(1.27 * Controller1.Axis2.value());
+    double leftMotorSpin = map(Controller1.Axis3.value(), 0, 100, 0, 127);
+    double rightMotorSpin = map(Controller1.Axis2.value(), 0, 100, 0, 127);
 
     // Left side movement
-    LEFTMOTOR.spin(
-      directionType::fwd, leftMotorSpin,
-      velocityUnits::pct);
-
-    LEFTMOTORF.spin(
-      directionType::fwd, leftMotorSpin,
-      velocityUnits::pct);
+    leftDriveGroup.spin(directionType::fwd, leftMotorSpin, velocityUnits::pct);
 
     // Right side movement
-    RIGHTMOTOR.spin(
-      directionType::fwd, rightMotorSpin,
-      velocityUnits::pct);
-
-    RIGHTMOTORF.spin(
-      directionType::fwd, rightMotorSpin,
-      velocityUnits::pct);
-  
+    rightDriveGroup.spin(directionType::fwd, rightMotorSpin, velocityUnits::pct);
 
     // left side deadzone
     if (abs(Controller1.Axis3.value()) < 1) {
@@ -195,7 +262,7 @@ void usercontrol(void) {
     }
 
     if (Controller1.ButtonX.pressing()) {
-      PUSH.spin(directionType::fwd, 127, velocityUnits::pct);
+      PUSH.spin(directionType::fwd, 50, velocityUnits::pct);
     } else if (Controller1.ButtonY.pressing()) {
       PUSH.spin(directionType::rev, 50, velocityUnits::pct);
     } else {
