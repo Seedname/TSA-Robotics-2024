@@ -70,7 +70,7 @@ void move_inches(double inches, int speed) {
 
 
 double get_rotation() {
-  double currentRotation = INTERTIAL.rotation(degrees);
+  double currentRotation = INERTIAL.rotation(degrees);
   // printf("Rotation %f\n", currentRotation);
   return currentRotation;
 }
@@ -135,7 +135,7 @@ void autonomous(void) {
 
   smart_drivetrain.setRotation(0, degrees);
   
-  INTERTIAL.setRotation(0, degrees);
+  INERTIAL.setRotation(0, degrees);
 
   int globalSpeed = 100;
   int rotateSpeed = 30;
