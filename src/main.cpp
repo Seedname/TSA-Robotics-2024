@@ -43,9 +43,23 @@ void pre_auton(void) {
 }
 
 
-double map(double val, double inputMin, double inputMax, double outputMin, double outputMax) {
-  return (val - inputMin) * outputMax / inputMax + outputMin;
+double absdbl(double flt) {
+  if (flt >= 0.0) {
+    return flt;
+  }
+  return -flt;
 }
+
+void stop_robot() {
+  leftDriveGroup.stop();
+  rightDriveGroup.stop();
+}
+
+void lock_bot() {
+  leftDriveGroup.stop(brakeType::hold);
+  rightDriveGroup.stop(brakeType::hold);
+}
+
 
 double controlCurve(double val) {
   if (val == 0) return 0;
@@ -70,7 +84,7 @@ void move_inches(double inches, int speed) {
 
 
 double get_rotation() {
-  double currentRotation = INTERTIAL.rotation(degrees);
+  double currentRotation = INERTIAL.rotation(degrees);
   // printf("Rotation %f\n", currentRotation);
   return currentRotation;
 }
@@ -122,8 +136,6 @@ void autonomous(void) {
   const double trackWidth = 13.0;
   const double wheelBase = 12.0;
 
-  motor_group leftDriveGroup = motor_group(LEFTMOTOR, LEFTMOTORF);
-  motor_group rightDriveGroup = motor_group(RIGHTMOTOR, RIGHTMOTORF);
   smartdrive smart_drivetrain = smartdrive(leftDriveGroup, rightDriveGroup, INERTIAL, wheelTravel, trackWidth, wheelBase, inches);
 
   PneumaticH.set(true);
@@ -135,7 +147,7 @@ void autonomous(void) {
 
   smart_drivetrain.setRotation(0, degrees);
   
-  INTERTIAL.setRotation(0, degrees);
+  INERTIAL.setRotation(0, degrees);
 
   int globalSpeed = 100;
   int rotateSpeed = 30;
@@ -149,7 +161,7 @@ void autonomous(void) {
   stop_robot();
 
   // move bot into goal
-  move_inches_in_seconds(smart_drivetrain, 31, 1, wheelTravel, gearRatio, directionType::rev);
+  move_inches(31, globalSpeed);
   smart_drivetrain.stop(brakeType::hold);
 
   // rotate bot so it is flat next to goal
