@@ -241,6 +241,16 @@ void autonomous(void) {
   move_inches(10, -globalSpeed);
   stop_robot();
   lock_bot();
+
+  orient_bot(0, rotateSpeed);
+
+  move_inches(40, -globalSpeed);
+  stop_robot();
+  lock_bot();
+
+  rotate_degrees(60, -rotateSpeed);
+  move_motors_timed(127, 127, 1);
+  move_motors_timed(0, 127, 1);
 }
 
 double map(double val, double inputMin, double inputMax, double outputMin, double outputMax) {
